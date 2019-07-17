@@ -4,7 +4,7 @@
     @desciption MQTT client for publishing
 --]]
 
-function mqtt_publisher(MQTT_CONFIG, cb_connect, cb_publish)
+function mqtt_publisher(MQTT_CONFIG, cb_connect, cb_disconnect, cb_publish)
 
     local tmr_mqtt = tmr.create()
     local client = mqtt.Client(
@@ -16,6 +16,7 @@ function mqtt_publisher(MQTT_CONFIG, cb_connect, cb_publish)
 
     client:on("offline", function(client) 
         print ("Reconnecting ...")
+        cb_disconnect()
         reconnect()
     end)
 

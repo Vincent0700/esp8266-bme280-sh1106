@@ -77,7 +77,7 @@ tmr_disp:alarm(
 --------------------------------------------------
 
 print("Setting up Wifi ...")
-ui:drawValue(0, "Conn WIFI")
+ui:drawValue(0, "Connect WIFI")
 
 wifi.setmode(wifi.STATIONAP)
 wifi.sta.setip(WIFI_CONFIG)
@@ -96,17 +96,20 @@ tmr_wifi:alarm(
                 print("Wifi is ready.")
                 
                 -- Setup MQTT Client
-                ui:drawValue(0, "Conn MQTT")
+                ui:drawValue(0, "Connect MQTT")
 
-                local dot_count = 0
+                local n = 0
                 mqtt_publisher(
                     MQTT_CONFIG, 
                     function()
                         ui:drawValue(0, "Preparing")
                     end,
                     function()
-                        dot_count = (dot_count + 1) % 5
-                        ui:drawValue(0, "Transfer " .. string.rep(".", dot_count))
+                        ui:drawValue(0, "Connect MQTT")
+                    end,
+                    function()
+                        n = (n + 1) % 5
+                        ui:drawValue(0, "Transfer " .. string.rep(">", n))
                         return json_data
                     end
                 )
