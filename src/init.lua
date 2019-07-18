@@ -1,8 +1,8 @@
---[[
-    @name init.lua
-    @author vincent <wang.yuanqiu007@gmail.com>
-    @desciption Entrypoint
---]]
+--
+-- @name init.lua
+-- @author vincent <wang.yuanqiu007@gmail.com>
+-- @description Entrypoint
+--
 
 --------------------------------------------------
 ---- Initialize Variables
@@ -37,11 +37,10 @@ MQTT_CONFIG.retain = 0
 
 local ui = require("ui")
 local sensor = require("sensor")
-local mqtt_publisher = require("mqtt_publisher")
+local init_wifi = require("init_wifi")
+local init_mqtt = require("init_mqtt")
 
 local tmr_disp = tmr.create()
-local tmr_wifi = tmr.create()
-
 local json_data = nil
 
 --------------------------------------------------
@@ -59,65 +58,40 @@ ui:drawValue(0, "Init BME280")
 ui:flush()
 
 sensor:init()
-tmr_disp:alarm(
-    SENSOR_CONFIG.rate,
+tmr_disp:alarm(SENSOR_CONFIG.rate,
     tmr.ALARM_AUTO,
     function()
-        T, P, H = sensor:getData()
-        json_data = sjson.encode({temp=T, pres=P, humi=H})
+        local T, P, H = sensor:getData()
+        json_data = sjson.encode({ temp = T, pres = P, humi = H })
         ui:drawValue(1, T .. " C")
         ui:drawValue(2, P .. " Pa")
         ui:drawValue(3, H .. " %")
         ui:flush()
-    end
-)
+    end)
 
 --------------------------------------------------
----- Setup Wifi
+---- Setup WIFI
 --------------------------------------------------
 
-print("Setting up Wifi ...")
+print("Setting up WIFI ...")
 ui:drawValue(0, "Connect WIFI")
 
-wifi.setmode(wifi.STATIONAP)
-wifi.sta.setip(WIFI_CONFIG)
-wifi.sta.config(WIFI_AUTH)
-wifi.sta.connect()
-
-tmr_wifi:alarm(
-    1000,
-    tmr.ALARM_AUTO,
+init_wifi(WIFI_CONFIG, WIFI_AUTH,
     function()
-        if wifi.sta.getip() == nil then
-            print("Waiting for IP ...")
-        else
-            ip, netmask, gateway = wifi.sta.getip()
-            if (ip == WIFI_CONFIG.ip and gateway == WIFI_CONFIG.gateway) then
-                print("Wifi is ready.")
-                
-                -- Setup MQTT Client
-                ui:drawValue(0, "Connect MQTT")
+        -- Setup MQTT Client
+        ui:drawValue(0, "Connect MQTT")
 
-                local n = 0
-                mqtt_publisher(
-                    MQTT_CONFIG, 
-                    function()
-                        ui:drawValue(0, "Preparing")
-                    end,
-                    function()
-                        ui:drawValue(0, "Connect MQTT")
-                    end,
-                    function()
-                        n = (n + 1) % 5
-                        ui:drawValue(0, "Transfer " .. string.rep(">", n))
-                        return json_data
-                    end
-                )
-            else
-                ui:drawValue(0, "Error")
-                print("Cannot get IP.")
-            end
-            tmr_wifi:stop()
-        end
-    end
-)
+        local n = 0
+        init_mqtt(MQTT_CONFIG,
+            function() ui:drawValue(0, "Preparing") end,
+            function() ui:drawValue(0, "Connect MQTT") end,
+            function()
+                n = (n + 1) % 16
+                ui:drawValue(0, string.rep(">", n))
+                return json_data
+            end)
+    end,
+    function()
+        -- Connect Error
+        ui:drawValue(0, "Error")
+    end)

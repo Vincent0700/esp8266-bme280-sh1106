@@ -1,8 +1,8 @@
---[[
-    @name sensor.lua
-    @author vincent <wang.yuanqiu007@gmail.com>
-    @desciption A package of module bme280
---]]
+--
+-- @name sensor.lua
+-- @author vincent <wang.yuanqiu007@gmail.com>
+-- @description bme280 helper
+--
 
 local Sensor = {}
 

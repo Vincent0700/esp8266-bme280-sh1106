@@ -1,8 +1,8 @@
---[[
-    @name ui.lua
-    @author vincent <wang.yuanqiu007@gmail.com>
-    @desciption This is a ui framework for ssh_1106 128x64 oled display
---]]
+--
+-- @name ui.lua
+-- @author vincent <wang.yuanqiu007@gmail.com>
+-- @description This is a ui framework for ssh_1106 128x64 oled display
+--
 
 local UI = { disp }
 local ylist = { 23, 35, 48, 60 }
